@@ -35,6 +35,14 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     logger.info("AgriSārathi backend starting up — initialising database …")
     init_db()
+
+    logger.info("Ingesting knowledge base into ChromaDB for RAG...")
+    try:
+        from scripts.ingest_docs import ingest_knowledge_base
+        ingest_knowledge_base()
+    except Exception as e:
+        logger.error(f"Failed to ingest knowledge base: {e}")
+
     logger.info("Database initialised.")
     yield
     logger.info("AgriSārathi backend shutting down.")
@@ -67,7 +75,7 @@ app = FastAPI(
 # ---------------------------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_url, "http://localhost:3000", "http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5174"],
+    allow_origins=[settings.frontend_url, "https://agrisarathi.vercel.app", "http://localhost:3000", "http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5174"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
