@@ -6,7 +6,7 @@ Uses pydantic-settings for typed, validated configuration.
 """
 
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, field_validator
 
 
 class Settings(BaseSettings):
@@ -24,6 +24,18 @@ class Settings(BaseSettings):
         default="sqlite:///./agrisarathi.db",
         alias="DATABASE_URL",
     )
+
+    @field_validator("database_url")
+    @classmethod
+    def fix_sqlalchemy_postgres_scheme(cls, v: str) -> str:
+        """Safely ensure the PostgreSQL dialect uses psycopg2-binary."""
+        if v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql+psycopg2://", 1)
+        if v.startswith("postgresql://"):
+            return v.replace("postgresql://", "postgresql+psycopg2://", 1)
+        if v.startswith("postgresql+psycopg://"):
+            return v.replace("postgresql+psycopg://", "postgresql+psycopg2://", 1)
+        return v
 
     # --- Frontend ---
     frontend_url: str = Field(
