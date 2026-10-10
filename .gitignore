@@ -72,6 +72,7 @@ Desktop.ini
 *.db
 *.sqlite
 *.sqlite3
+tests/test_agrisarathi.db
 
 # ===========================
 # Generated Files
@@ -89,6 +90,7 @@ htmlcov/
 # ===========================
 chroma_data/
 chromadb/
+chroma_db/
 
 # ===========================
 # ML Models
