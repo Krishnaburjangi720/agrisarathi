@@ -14,9 +14,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import settings
-from app.core.config import settings
 from app.database.connection import init_db
-from app.api import health, farms, fields, soil_tests, advisories, sensors, activities, reports
+from app.api import health, farms, fields, soil_tests, advisories, sensors, activities, reports, weather
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -121,3 +120,4 @@ app.include_router(advisories.router, prefix="/advisories", tags=["Advisories"])
 app.include_router(sensors.router)
 app.include_router(activities.router, prefix="/activities", tags=["Activities"])
 app.include_router(reports.router, prefix="/fields", tags=["Reports"])
+app.include_router(weather.router)

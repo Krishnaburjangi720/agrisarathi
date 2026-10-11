@@ -86,7 +86,8 @@ def generate_field_report(field, farm, soil_test, weather, advisory, activities)
     # 3. Soil and Sensor Readings
     elements.append(Paragraph("Soil Information", heading_style))
     if soil_test:
-        elements.append(Paragraph("SIMULATED or Sampled Data", simulated_style))
+        source_label = getattr(soil_test, "measurement_source", None) or "Field Laboratory Soil Test"
+        elements.append(Paragraph(f"Record Provenance: {source_label}", normal_style))
         soil_data = [
             ["pH", str(soil_test.soil_ph) if soil_test.soil_ph is not None else "N/A"],
             ["Moisture", f"{soil_test.soil_moisture_percent} %" if soil_test.soil_moisture_percent is not None else "N/A"],
