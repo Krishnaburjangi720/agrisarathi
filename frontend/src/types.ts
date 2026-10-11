@@ -1,26 +1,45 @@
 export interface Farm {
   farm_id: string;
   name: string;
+  owner_name?: string;
+  location_name?: string;
+  latitude?: number;
+  longitude?: number;
   location_latitude?: number;
   location_longitude?: number;
   total_area_hectares?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Field {
   field_id: string;
   farm_id: string;
   field_area_hectares: number;
+  soil_type?: string;
+  previous_crop?: string;
+  proposed_crop?: string;
   primary_crop_current?: string;
   irrigation_source?: string;
   water_availability?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface SoilTest {
-  test_id: string;
+  soil_test_id: string;
   field_id: string;
-  test_date: string;
   soil_ph?: number;
+  nitrogen_kg_per_ha?: number;
+  phosphorus_kg_per_ha?: number;
+  potassium_kg_per_ha?: number;
   soil_moisture_percent?: number;
+  organic_matter_percent?: number;
+  measurement_timestamp?: string;
+  measurement_source?: string;
+  created_at?: string;
+  test_id?: string;
+  test_date?: string;
   soil_temperature_c?: number;
   nitrogen_mg_kg?: number;
   phosphorus_mg_kg?: number;

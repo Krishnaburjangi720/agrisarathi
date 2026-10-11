@@ -6,7 +6,18 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${url}`, options);
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`API Error ${response.status}: ${text}`);
+    let errorMessage = `API Error ${response.status}: ${text}`;
+    try {
+      const parsed = JSON.parse(text);
+      if (typeof parsed.detail === 'string') {
+        errorMessage = parsed.detail;
+      } else if (Array.isArray(parsed.detail)) {
+        errorMessage = parsed.detail.map((d: any) => d.msg || JSON.stringify(d)).join(', ');
+      }
+    } catch {
+      // Use fallback
+    }
+    throw new Error(errorMessage);
   }
   return response.json();
 }
@@ -38,10 +49,21 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(field),
     }),
+  updateField: (id: string, updates: Partial<Field>) =>
+    fetchJson<Field>(`/fields/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    }),
 
   // Soil Tests
   getLatestSoilTest: (field_id: string) =>
     fetchJson<SoilTest>(`/fields/${field_id}/latest-soil-test`),
+
+  getFieldSoilTests: async (field_id: string) => {
+    const res = await fetchJson<{ soil_tests: SoilTest[]; total: number }>(`/fields/${field_id}/soil-tests`);
+    return { items: res.soil_tests || [] };
+  },
 
   createSoilTest: (test: Partial<SoilTest>) =>
     fetchJson<SoilTest>('/soil-tests', {
@@ -67,11 +89,11 @@ export const api = {
 
   // Activities
   getActivities: (field_id?: string) => {
-    const url = field_id ? `/activities/?field_id=${field_id}` : '/activities/';
+    const url = field_id ? `/activities?field_id=${field_id}` : '/activities';
     return fetchJson<{ items: Activity[] }>(url);
   },
   createActivity: (activity: Partial<Activity>) =>
-    fetchJson<Activity>('/activities/', {
+    fetchJson<Activity>('/activities', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(activity),
