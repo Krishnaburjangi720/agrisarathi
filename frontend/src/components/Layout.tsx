@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Map, Sprout, Calendar, Menu, X, ShieldCheck, ChevronRight } from 'lucide-react';
+import SplineSidebarModel from './SplineSidebarModel';
 
 export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -63,12 +64,12 @@ export default function Layout() {
 
       {/* Sidebar (Desktop Persistent + Mobile Drawer) */}
       <aside
-        className={`fixed md:sticky top-0 h-screen w-72 bg-[#0c2419] text-white flex flex-col z-50 transition-transform duration-200 ease-in-out md:translate-x-0 border-r border-emerald-950/80 shadow-xl md:shadow-none ${
+        className={`fixed md:sticky top-0 h-screen w-72 md:w-[312px] bg-[#0c2419] text-white flex flex-col z-50 transition-transform duration-200 ease-in-out md:translate-x-0 border-r border-emerald-950/80 shadow-xl md:shadow-none overflow-y-auto ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
         {/* Brand Header */}
-        <div className="p-6 border-b border-emerald-900/40">
+        <div className="p-6 border-b border-emerald-900/40 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 flex items-center justify-center text-white shadow-md ring-1 ring-emerald-300/30">
@@ -103,7 +104,7 @@ export default function Layout() {
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 px-3 py-5 space-y-1.5 overflow-y-auto">
+        <nav className="px-3 py-4 space-y-1.5 shrink-0">
           <div className="px-3 pb-2 text-[11px] font-semibold tracking-wider text-emerald-400/80 uppercase">
             Core Modules
           </div>
@@ -139,8 +140,13 @@ export default function Layout() {
           })}
         </nav>
 
+        {/* Spline 3D Model in Sidebar (empty area below Planner & Alerts, above bottom card) */}
+        <div className="flex-1 px-3 py-2 flex flex-col justify-center min-h-[190px] overflow-hidden">
+          <SplineSidebarModel />
+        </div>
+
         {/* Sidebar Footer System Status */}
-        <div className="p-4 m-3 rounded-xl bg-emerald-950/60 border border-emerald-900/50 text-xs text-emerald-200/90 space-y-2">
+        <div className="p-4 m-3 rounded-xl bg-emerald-950/60 border border-emerald-900/50 text-xs text-emerald-200/90 space-y-2 shrink-0">
           <div className="flex items-center justify-between font-medium">
             <span className="flex items-center gap-1.5 text-emerald-300">
               <ShieldCheck size={14} className="text-emerald-400" />
