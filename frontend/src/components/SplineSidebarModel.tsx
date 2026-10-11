@@ -122,8 +122,22 @@ export default function SplineSidebarModel({ className = '' }: SplineSidebarMode
     const viewer = containerRef.current.querySelector('spline-viewer');
     if (!viewer) return;
 
+    const removeBadge = () => {
+      try {
+        if (viewer.shadowRoot) {
+          const logo = viewer.shadowRoot.querySelector('#logo') as HTMLElement | null;
+          if (logo) {
+            logo.style.display = 'none';
+          }
+        }
+      } catch {
+        // Safe fallback
+      }
+    };
+
     const handleLoad = () => {
       setModelReady(true);
+      removeBadge();
     };
 
     const handleError = () => {
@@ -134,15 +148,21 @@ export default function SplineSidebarModel({ className = '' }: SplineSidebarMode
     viewer.addEventListener('load', handleLoad);
     viewer.addEventListener('splineerror', handleError);
 
+    // Initial check and periodic cleanup of the viewer badge
+    removeBadge();
+    const badgeInterval = setInterval(removeBadge, 500);
+
     // Safety timeout in case events are missed or already completed
     const timer = setTimeout(() => {
       setModelReady(true);
+      removeBadge();
     }, 4000);
 
     return () => {
       viewer.removeEventListener('load-complete', handleLoad);
       viewer.removeEventListener('load', handleLoad);
       viewer.removeEventListener('splineerror', handleError);
+      clearInterval(badgeInterval);
       clearTimeout(timer);
     };
   }, [scriptLoaded]);
@@ -152,6 +172,13 @@ export default function SplineSidebarModel({ className = '' }: SplineSidebarMode
     setModelReady(false);
     setScriptLoaded(false);
     setRetryCount(c => c + 1);
+  };
+
+  const handleRotateClick = () => {
+    if (containerRef.current) {
+      const viewer = containerRef.current.querySelector('spline-viewer') as HTMLElement | null;
+      viewer?.focus();
+    }
   };
 
   return (
@@ -164,7 +191,7 @@ export default function SplineSidebarModel({ className = '' }: SplineSidebarMode
       <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/40 via-transparent to-emerald-950/70 pointer-events-none" />
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
 
-      {/* Mini Header Badge */}
+      {/* Mini Header Badge - AGRI-AVATAR 3D */}
       <div className="absolute top-2.5 left-3 z-20 flex items-center gap-1.5 pointer-events-none">
         <span className="inline-flex items-center gap-1 text-[10px] font-semibold tracking-wider text-emerald-300 bg-emerald-950/90 backdrop-blur-xs px-2 py-0.5 rounded-md border border-emerald-700/50 uppercase">
           <Sparkles size={11} className="text-emerald-400" />
@@ -172,22 +199,25 @@ export default function SplineSidebarModel({ className = '' }: SplineSidebarMode
         </span>
       </div>
 
-      {/* Mini Interactive Hint */}
-      <div className="absolute bottom-2 right-2.5 z-20 pointer-events-none">
-        <span className="text-[9px] text-emerald-400/80 bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-800/40">
-          Rotate 3D
-        </span>
-      </div>
+      {/* Clickable Rotate 3D Control */}
+      <button
+        type="button"
+        onClick={handleRotateClick}
+        aria-label="Rotate 3D avatar"
+        className="absolute bottom-2.5 right-2.5 z-30 inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-300 bg-emerald-950/90 hover:bg-emerald-900 active:scale-95 px-2 py-0.5 rounded-md border border-emerald-700/60 shadow-xs transition-all cursor-pointer"
+      >
+        <span>Rotate 3D</span>
+      </button>
 
-      {/* 3D Viewport Area */}
+      {/* 3D Viewport Area with overflow cropping and 1.3x Zoom & Centering */}
       <div
         ref={containerRef}
-        className="w-full h-[190px] sm:h-[210px] md:h-[230px] relative overflow-hidden"
+        className="w-full h-[200px] sm:h-[220px] md:h-[240px] relative overflow-hidden flex items-center justify-center"
       >
         {/* Loading Skeleton */}
         {(!scriptLoaded || !modelReady) && !loadError && (
           <div
-            className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#0a2015] p-3 text-center"
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#0a2015] p-3 text-center pointer-events-none"
             aria-live="polite"
           >
             <div className="w-10 h-10 rounded-xl bg-emerald-900/60 border border-emerald-700/40 flex items-center justify-center shadow-md animate-pulse mb-2">
@@ -220,11 +250,18 @@ export default function SplineSidebarModel({ className = '' }: SplineSidebarMode
           </div>
         )}
 
-        {/* Spline Viewer Custom Element */}
+        {/* Spline Viewer Custom Element with moderate 1.3x Zoom and Centered Repositioning */}
         {scriptLoaded && !loadError && (
           <spline-viewer
             url={SPLINE_SCENE_URL}
-            style={{ width: '100%', height: '100%', display: 'block', background: 'transparent' }}
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'block',
+              background: 'transparent',
+              transform: 'scale(1.3) translateY(6px)',
+              transformOrigin: 'center center',
+            }}
           />
         )}
       </div>
