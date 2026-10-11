@@ -1,9 +1,23 @@
 import type { Farm, Field, SoilTest, WeatherData, SensorData, AdvisoryRequest, AdvisoryResponse, Activity } from './types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+/**
+ * Resolves and sanitizes the backend API base URL.
+ * Strips any trailing dots, slashes, or whitespace that may be accidentally
+ * introduced in deployment environment variables (e.g. 'https://agrisarathi.onrender.com.').
+ */
+export function sanitizeApiBaseUrl(rawUrl?: string, isProd: boolean = import.meta.env.PROD): string {
+  const url = (rawUrl || '').trim();
+  if (!url) {
+    return isProd ? 'https://agrisarathi.onrender.com' : 'http://localhost:8000';
+  }
+  return url.replace(/[./\s]+$/, '');
+}
+
+export const API_BASE_URL = sanitizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL);
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${url}`, options);
+  const normalizedPath = url.startsWith('/') ? url : `/${url}`;
+  const response = await fetch(`${API_BASE_URL}${normalizedPath}`, options);
   if (!response.ok) {
     const text = await response.text();
     let errorMessage = `API Error ${response.status}: ${text}`;

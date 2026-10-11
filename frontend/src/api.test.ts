@@ -1,5 +1,36 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { api } from './api';
+import { api, sanitizeApiBaseUrl } from './api';
+
+describe('sanitizeApiBaseUrl', () => {
+  it('strips trailing dots from URL', () => {
+    expect(sanitizeApiBaseUrl('https://agrisarathi.onrender.com.')).toBe('https://agrisarathi.onrender.com');
+  });
+
+  it('strips trailing slashes from URL', () => {
+    expect(sanitizeApiBaseUrl('https://agrisarathi.onrender.com/')).toBe('https://agrisarathi.onrender.com');
+  });
+
+  it('strips combinations of trailing dots and slashes with whitespace', () => {
+    expect(sanitizeApiBaseUrl('https://agrisarathi.onrender.com./ ')).toBe('https://agrisarathi.onrender.com');
+    expect(sanitizeApiBaseUrl('https://agrisarathi.onrender.com/.')).toBe('https://agrisarathi.onrender.com');
+  });
+
+  it('falls back to production backend URL when in production mode without env var', () => {
+    expect(sanitizeApiBaseUrl('', true)).toBe('https://agrisarathi.onrender.com');
+    expect(sanitizeApiBaseUrl(undefined, true)).toBe('https://agrisarathi.onrender.com');
+  });
+
+  it('falls back to local development URL when in development mode without env var', () => {
+    expect(sanitizeApiBaseUrl('', false)).toBe('http://localhost:8000');
+    expect(sanitizeApiBaseUrl(undefined, false)).toBe('http://localhost:8000');
+  });
+
+  it('preserves valid URLs without modification', () => {
+    expect(sanitizeApiBaseUrl('https://agrisarathi.onrender.com')).toBe('https://agrisarathi.onrender.com');
+    expect(sanitizeApiBaseUrl('http://127.0.0.1:8000')).toBe('http://127.0.0.1:8000');
+    expect(sanitizeApiBaseUrl('https://custom-domain.com/api')).toBe('https://custom-domain.com/api');
+  });
+});
 
 describe('API Client Suite', () => {
   const originalFetch = globalThis.fetch;
